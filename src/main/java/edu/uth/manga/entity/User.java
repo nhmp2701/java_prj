@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 public class User extends BaseEntity {
 
     private String username;
-
+    @Column(nullable = false, unique = true)
     private String email;
 
     private String password;
