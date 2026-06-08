@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workflow Management System</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            margin:20px;
+        }
+
+        .board{
+            display:flex;
+            gap:20px;
+        }
+
+        .column{
+            width:250px;
+            min-height:500px;
+            border:1px solid gray;
+            border-radius:8px;
+            padding:10px;
+        }
+
+        .column h2{
+            text-align:center;
+        }
+
+        .task{
+            background:#f4f4f4;
+            padding:10px;
+            margin-bottom:10px;
+            border-radius:5px;
+            cursor:move;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1>Workflow Management System</h1>
+
+<div class="board">
+
+    <div class="column" id="TODO">
+        <h2>TODO</h2>
+    </div>
+
+    <div class="column" id="IN_PROGRESS">
+        <h2>IN PROGRESS</h2>
+    </div>
+
+    <div class="column" id="REVIEW">
+        <h2>REVIEW</h2>
+    </div>
+
+    <div class="column" id="DONE">
+        <h2>DONE</h2>
+    </div>
+
+</div>
+
+<script src="kanban.js"></script>
+
+</body>
+</html>

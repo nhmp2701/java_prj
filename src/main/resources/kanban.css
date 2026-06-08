@@ -1,0 +1,44 @@
+body{
+    font-family: Arial;
+    margin:20px;
+}
+
+.board{
+    display:flex;
+    gap:20px;
+}
+
+.column{
+    width:300px;
+    min-height:500px;
+
+    background:#f4f4f4;
+
+    border-radius:10px;
+
+    padding:10px;
+}
+
+.task{
+    background:white;
+
+    padding:10px;
+
+    margin-bottom:10px;
+
+    border-radius:8px;
+
+    cursor:move;
+}
+/* Hiệu ứng khi rê chuột vào thẻ công việc */
+.task:hover {
+    background: #e3f2fd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+    cursor: grab;
+}
+
+.task:active {
+    cursor: grabbing;
+}
