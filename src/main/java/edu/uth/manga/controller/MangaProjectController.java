@@ -1,15 +1,12 @@
 package edu.uth.manga.controller;
-
+import edu.uth.manga.dto.response.ApiResponse;
 import edu.uth.manga.dto.request.MangaProjectCreationRequest;
 import edu.uth.manga.entity.MangaProject;
-import edu.uth.manga.repository.MangaProjectRepository;
 import edu.uth.manga.service.MangaProjectService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import edu.uth.manga.dto.response.ApiResponse;
 import edu.uth.manga.dto.response.MangaProjectResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController

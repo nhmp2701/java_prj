@@ -34,4 +34,5 @@ public class Chapter {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manga_id", nullable = false)
     private MangaProject manga;
+
 }

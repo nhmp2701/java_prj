@@ -1,7 +1,6 @@
 package edu.uth.manga.controller;
-
-import edu.uth.manga.dto.request.TaskRequest;
 import edu.uth.manga.dto.response.ApiResponse;
+import edu.uth.manga.dto.request.TaskRequest;
 import edu.uth.manga.dto.response.TaskResponse;
 import edu.uth.manga.enums.TaskStatus;
 import edu.uth.manga.service.WorkflowTaskService;
@@ -44,7 +43,7 @@ public class WorkflowTaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Endpoint thực hiện cập nhật nhân sự phụ trách thẻ công việc
+
     @PutMapping("/{id}/assign")
     public ResponseEntity<ApiResponse<TaskResponse>> assignTask(
             @PathVariable Long id,
@@ -56,7 +55,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
-    // Endpoint cập nhật trạng thái thẻ khi thực hiện thao tác kéo thả (Drag & Drop)
+
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<TaskResponse>> updateStatus(
             @PathVariable Long id,
@@ -68,7 +67,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
-    // Lấy chi tiết một công việc theo ID để đổ lên form sửa
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskResponse>> getTaskById(@PathVariable Long id) {
         ApiResponse<TaskResponse> response = new ApiResponse<>();
@@ -78,7 +77,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
-    // Chỉnh sửa nội dung chi tiết (tiêu đề, mô tả) của công việc
+
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskResponse>> updateTask(
             @PathVariable Long id,
@@ -90,7 +89,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
-    // Xóa bỏ hoàn toàn một thẻ công việc ra khỏi hệ thống
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTask(@PathVariable Long id) {
         service.deleteTask(id);
