@@ -1,4 +1,4 @@
-package edu.uth.manga.security.service;
+package edu.uth.manga.service.impl;
 
 import edu.uth.manga.enums.ChapterStatus;
 import edu.uth.manga.dto.request.ChapterRequest;
@@ -19,6 +19,24 @@ public class ChapterService {
     private final ChapterRepository chapterRepository;
     private final MangaProjectRepository mangaProjectRepository;
 
+    @Transactional
+    public void publishChapter(Long chapterId) {
+        // 1. Tìm Chapter trong database
+        Chapter chapter = chapterRepository.findById(chapterId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chương truyện này!"));
+
+        // 2. TRẠM KIỂM SOÁT: Chỉ cho phép xuất bản nếu truyện đã duyệt (PENDING) hoặc hẹn giờ (SCHEDULED)
+        if (chapter.getStatus() != ChapterStatus.PENDING && chapter.getStatus() != ChapterStatus.SCHEDULED) {
+            throw new RuntimeException("Lỗi: Chỉ chương đã được duyệt (PENDING) hoặc hẹn giờ (SCHEDULED) mới được phép xuất bản!");
+        }
+
+        // 3. Đổi trạng thái sang PUBLISHED
+        chapter.setStatus(ChapterStatus.PUBLISHED);
+
+        // 4. Lưu lại vào Database
+        chapterRepository.save(chapter);
+    }
+
     // 1. Logic API: Tạo Chapter mới
     @Transactional
     public Chapter createChapter(ChapterRequest request) {
@@ -31,8 +49,10 @@ public class ChapterService {
                 .title(request.getTitle())
                 .chapterNumber(request.getChapterNumber())
                 .content(request.getContent())
-                .status(ChapterStatus.DRAFT) // Mặc định trạng thái ban đầu khi tạo là DRAFT
-                .manga(manga) // Gắn mối quan hệ thuộc về truyện nào
+                .scheduledPublishAt(request.getScheduledPublishAt())
+
+                .status(request.getScheduledPublishAt() != null ? ChapterStatus.SCHEDULED : ChapterStatus.DRAFT)
+                .manga(manga)
                 .build();
 
         return chapterRepository.save(chapter);

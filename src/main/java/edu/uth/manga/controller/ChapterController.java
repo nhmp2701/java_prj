@@ -3,7 +3,8 @@ package edu.uth.manga.controller;
 import edu.uth.manga.dto.request.ChapterRequest;
 import edu.uth.manga.entity.Chapter;
 import edu.uth.manga.enums.ChapterStatus;
-import edu.uth.manga.security.service.ChapterService;
+
+import edu.uth.manga.service.impl.ChapterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,7 @@ public class ChapterController {
         return ResponseEntity.ok(chapterService.getChaptersByManga(mangaId));
     }
 
-    // API Thay đổi trạng thái Workflow (Duyệt bài, huỷ bài...)
-    @PatchMapping("/{id}/status")
+
     public ResponseEntity<Chapter> changeStatus(
             @PathVariable Long id,
             @RequestParam ChapterStatus status) {
@@ -43,5 +43,11 @@ public class ChapterController {
     public ResponseEntity<String> delete(@PathVariable Long id) {
         chapterService.deleteChapter(id);
         return ResponseEntity.ok("Xóa chương thành công!");
+    }
+    @PatchMapping("/{id}/publish")
+    public edu.uth.manga.dto.response.ApiResponse<Object> publishChapter(@PathVariable Long id) {
+        chapterService.publishChapter(id);
+
+        return new edu.uth.manga.dto.response.ApiResponse<>(true, null, "Xuất bản chương truyện thành công!");
     }
 }

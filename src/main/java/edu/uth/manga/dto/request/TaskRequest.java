@@ -24,6 +24,5 @@ public class TaskRequest {
 
     @NotNull(message = "Status cannot be null")
     private TaskStatus status;
-
     private Long chapterId; // Optional link to Chapter
 }

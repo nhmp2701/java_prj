@@ -14,4 +14,5 @@ public class ChapterRequest {
     private Integer chapterNumber;
     private String content;
     private Long mangaId;
+    private java.time.LocalDateTime scheduledPublishAt;
 }

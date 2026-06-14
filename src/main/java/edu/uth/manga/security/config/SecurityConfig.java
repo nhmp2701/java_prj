@@ -18,6 +18,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             CustomAccessDeniedHandler customAccessDeniedHandler,
@@ -83,7 +84,8 @@ public class SecurityConfig {
                          */
                         .requestMatchers(
                                 "/users",
-                                "/users/login"
+                                "/users/login",
+                                "/api/public/**" // ĐÃ MỞ KHÓA API CHO ĐỘC GIẢ TẠI ĐÂY
                         ).permitAll()
 
                         /*

@@ -14,6 +14,11 @@ import java.time.LocalDate;
 public class MangaProject extends BaseEntity {
 
     private String title;
+    @Column(name = "author_name")
+    private String authorName;
+
+    @Column(name = "cover_url")
+    private String coverUrl;
 
     @Column(columnDefinition = "TEXT")
     private String description;

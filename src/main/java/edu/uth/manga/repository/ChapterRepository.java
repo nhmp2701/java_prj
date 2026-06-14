@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
-    // Tìm các chapter thuộc về một bộ truyện cụ thể
+
     List<Chapter> findByMangaId(Long mangaId);
+    java.util.List<Chapter> findByStatusAndScheduledPublishAtBefore(edu.uth.manga.enums.ChapterStatus status, java.time.LocalDateTime time);
 }
