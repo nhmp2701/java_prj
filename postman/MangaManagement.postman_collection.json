@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "MangaManagement",
+    "_postman_id": "manga-management-system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/users"
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/users/login"
+      }
+    },
+    {
+      "name": "Profile",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users/profile"
+      }
+    },
+    {
+      "name": "Get Users",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/users/all"
+      }
+    },
+    {
+      "name": "Create Project",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/projects"
+      }
+    },
+    {
+      "name": "Get Projects",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/projects"
+      }
+    },
+    {
+      "name": "Get Project By Id",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/projects/1"
+      }
+    },
+    {
+      "name": "Update Project",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/projects/1"
+      }
+    },
+    {
+      "name": "Delete Project",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/projects/1"
+      }
+    },
+    {
+      "name": "Create Chapter",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/chapters"
+      }
+    },
+    {
+      "name": "Get Chapters",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/chapters/manga/1"
+      }
+    },
+    {
+      "name": "Publish Chapter",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/chapters/1/publish"
+      }
+    },
+    {
+      "name": "Create Task",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/tasks"
+      }
+    },
+    {
+      "name": "Get Tasks",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/tasks"
+      }
+    },
+    {
+      "name": "Assign Task",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/tasks/1/assign"
+      }
+    },
+    {
+      "name": "Update Task Status",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/tasks/1/status"
+      }
+    },
+    {
+      "name": "Upload Asset",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/assets/upload"
+      }
+    },
+    {
+      "name": "Approve Asset",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/assets/1/approve"
+      }
+    },
+    {
+      "name": "Reject Asset",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/assets/1/reject"
+      }
+    }
+  ]
+}
