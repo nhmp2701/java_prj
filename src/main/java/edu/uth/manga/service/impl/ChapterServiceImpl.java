@@ -6,19 +6,19 @@ import edu.uth.manga.entity.Chapter;
 import edu.uth.manga.entity.MangaProject;
 import edu.uth.manga.repository.ChapterRepository;
 import edu.uth.manga.repository.MangaProjectRepository;
+import edu.uth.manga.service.ChapterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ChapterService {
+public class ChapterServiceImpl implements ChapterService {
 
     private final ChapterRepository chapterRepository;
     private final MangaProjectRepository mangaProjectRepository;
-
+    @Override
     @Transactional
     public void publishChapter(Long chapterId) {
         // 1. Tìm Chapter trong database
@@ -38,6 +38,7 @@ public class ChapterService {
     }
 
     // 1. Logic API: Tạo Chapter mới
+    @Override
     @Transactional
     public Chapter createChapter(ChapterRequest request) {
 
@@ -59,11 +60,13 @@ public class ChapterService {
     }
 
     // 2. Logic API: Lấy danh sách chapter theo mã truyện (mangaId)
+    @Override
     public List<Chapter> getChaptersByManga(Long mangaId) {
         return chapterRepository.findByMangaId(mangaId);
     }
 
     // 3. Logic API: Cập nhật trạng thái Workflow (Duyệt bài, huỷ bài...)
+    @Override
     @Transactional
     public Chapter updateWorkflowStatus(Long id, ChapterStatus status) {
         Chapter chapter = chapterRepository.findById(id)
@@ -74,6 +77,7 @@ public class ChapterService {
     }
 
     // 4. Logic API: Xóa chapter
+    @Override
     @Transactional
     public void deleteChapter(Long id) {
         Chapter chapter = chapterRepository.findById(id)

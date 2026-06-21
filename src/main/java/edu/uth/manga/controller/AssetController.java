@@ -4,24 +4,21 @@ import edu.uth.manga.dto.response.ApiResponse;
 import edu.uth.manga.dto.request.AssetUploadRequest;
 import edu.uth.manga.dto.request.ReviewRequest;
 import edu.uth.manga.dto.response.AssetResponse;
-import edu.uth.manga.dto.response.ReviewResponse; // <-- Đã thêm thư viện này
+import edu.uth.manga.dto.response.ReviewResponse;
 import edu.uth.manga.service.AssetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List; // <-- Đã thêm thư viện này
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/assets")
 @RequiredArgsConstructor
 public class AssetController {
-
     private final AssetService assetService;
 
-    // ==========================================
-    // 1. API UPLOAD FILE (Frontend gửi file ảnh lên)
-    // ==========================================
+    // API UPLOAD FILE (Frontend gửi file ảnh lên)
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<AssetResponse> uploadAsset(
             @ModelAttribute AssetUploadRequest request,
@@ -31,9 +28,7 @@ public class AssetController {
         return new ApiResponse<>(responseData, "Tải lên bản vẽ thành công!");
     }
 
-    // ==========================================
-    // 2. API PHÊ DUYỆT BÀI
-    // ==========================================
+    // API PHÊ DUYỆT BÀI
     @PostMapping("/{id}/approve")
     public ApiResponse<AssetResponse> approveAsset(
             @PathVariable Long id,
@@ -44,9 +39,7 @@ public class AssetController {
         return new ApiResponse<>(responseData, "Đã phê duyệt bản vẽ thành công!");
     }
 
-    // ==========================================
-    // 3. API TỪ CHỐI BÀI (Yêu cầu sửa lại)
-    // ==========================================
+    // API TỪ CHỐI BÀI (Yêu cầu sửa lại)
     @PostMapping("/{id}/reject")
     public ApiResponse<AssetResponse> rejectAsset(
             @PathVariable Long id,
@@ -57,12 +50,9 @@ public class AssetController {
         return new ApiResponse<>(responseData, "Đã từ chối bản vẽ và gửi yêu cầu chỉnh sửa.");
     }
 
-    // ==========================================
-    // 4. API LẤY DANH SÁCH BÌNH LUẬN CỦA 1 BẢN VẼ
-    // ==========================================
+    // API LẤY DANH SÁCH BÌNH LUẬN CỦA 1 BẢN VẼ
     @GetMapping("/{id}/reviews")
     public ApiResponse<List<ReviewResponse>> getReviewsByAssetId(@PathVariable Long id) {
-
         List<ReviewResponse> responses = assetService.getReviewsByAssetId(id).stream()
                 .map(review -> new ReviewResponse(
                         review.getId(),
@@ -75,9 +65,7 @@ public class AssetController {
         return new ApiResponse<>(responses, "Lấy danh sách bình luận thành công");
     }
 
-    // ==========================================
-    // 5. API THÊM BÌNH LUẬN ĐỘC LẬP (TRAO ĐỔI)
-    // ==========================================
+    // API THÊM BÌNH LUẬN ĐỘC LẬP (TRAO ĐỔI)
     @PostMapping("/{id}/comments")
     public ApiResponse<ReviewResponse> addComment(
             @PathVariable Long id,

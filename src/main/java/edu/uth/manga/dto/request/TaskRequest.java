@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskRequest {
-
+    
     @NotBlank(message = "Title cannot be blank")
     private String title;
 

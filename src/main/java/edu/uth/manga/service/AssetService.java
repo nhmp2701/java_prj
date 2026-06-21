@@ -2,8 +2,9 @@ package edu.uth.manga.service;
 import edu.uth.manga.dto.request.AssetUploadRequest;
 import edu.uth.manga.dto.request.ReviewRequest;
 import edu.uth.manga.dto.response.AssetResponse;
-import edu.uth.manga.entity.Review; // <-- Import thêm Review
-import java.util.List;             // <-- Import thêm List
+import edu.uth.manga.entity.Review;
+import java.util.List;
+
 public interface AssetService {
     AssetResponse uploadAsset(AssetUploadRequest request, Long userId);
     AssetResponse approveAsset(Long id, String notes, Long approverId);

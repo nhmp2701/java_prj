@@ -8,19 +8,15 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import lombok.AllArgsConstructor;
 import java.util.List;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/tasks")
 @CrossOrigin("*")
 public class WorkflowTaskController {
-
     private final WorkflowTaskService service;
-
-    public WorkflowTaskController(WorkflowTaskService service) {
-        this.service = service;
-    }
 
     // Endpoint lấy toàn bộ danh sách công việc hiển thị lên Kanban Board
     @GetMapping
@@ -43,7 +39,6 @@ public class WorkflowTaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
     @PutMapping("/{id}/assign")
     public ResponseEntity<ApiResponse<TaskResponse>> assignTask(
             @PathVariable Long id,
@@ -54,7 +49,6 @@ public class WorkflowTaskController {
         response.setData(service.assignTask(id, user));
         return ResponseEntity.ok(response);
     }
-
 
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<TaskResponse>> updateStatus(
@@ -67,7 +61,6 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskResponse>> getTaskById(@PathVariable Long id) {
         ApiResponse<TaskResponse> response = new ApiResponse<>();
@@ -76,7 +69,6 @@ public class WorkflowTaskController {
         response.setData(service.getTaskById(id));
         return ResponseEntity.ok(response);
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskResponse>> updateTask(
@@ -88,7 +80,6 @@ public class WorkflowTaskController {
         response.setData(service.updateTask(id, request));
         return ResponseEntity.ok(response);
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTask(@PathVariable Long id) {

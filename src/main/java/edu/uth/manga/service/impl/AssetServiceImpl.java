@@ -16,6 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -23,8 +27,52 @@ public class AssetServiceImpl implements AssetService {
     private final AssetRepository assetRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+
+    // Define allowed file extensions and MIME types
+    private static final Set<String> ALLOWED_EXTENSIONS = new HashSet<>(
+        Arrays.asList("jpg", "jpeg", "png", "gif", "webp")
+    );
+
+    private static final Set<String> ALLOWED_MIME_TYPES = new HashSet<>(
+        Arrays.asList("image/jpeg", "image/png", "image/gif", "image/webp")
+    );
+
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    // Add file validation method
+    private void validateFileUpload(AssetUploadRequest request) {
+        if (request.getFile() == null || request.getFile().isEmpty()) {
+            throw new IllegalArgumentException("File không được phép để trống");
+        }
+
+        // Check file size
+        if (request.getFile().getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("Kích thước file vượt quá giới hạn 10MB");
+        }
+
+        // Check file extension
+        String filename = request.getFile().getOriginalFilename();
+        if (filename == null || !filename.contains(".")) {
+            throw new IllegalArgumentException("Tệp không có phần mở rộng hợp lệ");
+        }
+
+        String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Loại tệp không được hỗ trợ. Chỉ chấp nhận: " + ALLOWED_EXTENSIONS);
+        }
+
+        // Check MIME type
+        String contentType = request.getFile().getContentType();
+        if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("MIME type không hợp lệ: " + contentType);
+        }
+    }
+
     @Override
     public AssetResponse uploadAsset(AssetUploadRequest request, Long userId) {
+        // Validate file before processing
+        validateFileUpload(request);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy User"));
         String fileUrl = "https://storage.uth.edu/manga/" + request.getFile().getOriginalFilename();

@@ -12,37 +12,21 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import java.util.List;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class UserController {
-
     private final UserService userService;
-
     private final JwtService jwtService;
 
-    /*
-     * Constructor injection
-     */
-    public UserController(
-            UserService userService,
-            JwtService jwtService
-    ) {
-
-        this.userService = userService;
-        this.jwtService = jwtService;
-    }
-
-    /*
-     * Register API
-     */
+    // Register API
     @PostMapping
     public ApiResponse<UserResponse> createUser(
             @Valid @RequestBody UserCreationRequest request
     ) {
-
         User user = new User();
-
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
@@ -57,111 +41,58 @@ public class UserController {
         response.setEmail(savedUser.getEmail());
         response.setRole(savedUser.getRole());
 
-        ApiResponse<UserResponse> apiResponse =
-                new ApiResponse<>();
-
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage(
-                "User created successfully"
-        );
+        apiResponse.setMessage("User created successfully");
         apiResponse.setData(response);
 
         return apiResponse;
     }
 
-    /*
-     * Login API
-     */
+    // Login API
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(
             @RequestBody LoginRequest request
     ) {
-
-        User user = userService.findByEmail(
-                request.getEmail()
-        );
-
+        User user = userService.findByEmail(request.getEmail());
         if (user == null) {
-            throw new RuntimeException(
-                    "User not found"
-            );
+            throw new RuntimeException("User not found");
         }
 
-        boolean isPasswordCorrect =
-                userService.checkPassword(
-                        request.getPassword(),
-                        user.getPassword()
-                );
+        boolean isPasswordCorrect = userService.checkPassword(request.getPassword(), user.getPassword());
 
         if (!isPasswordCorrect) {
-            throw new RuntimeException(
-                    "Password is incorrect"
-            );
+            throw new RuntimeException("Password is incorrect");
         }
 
         String token = jwtService.generateToken(user);
-
-        LoginResponse response =
-                new LoginResponse();
-
+        LoginResponse response = new LoginResponse();
         response.setToken(token);
-
-        ApiResponse<LoginResponse> apiResponse =
-                new ApiResponse<>();
-
+        ApiResponse<LoginResponse> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage(
-                "Login successfully"
-        );
+        apiResponse.setMessage("Login successfully");
         apiResponse.setData(response);
-
         return apiResponse;
     }
 
-    /*
-     * Get all users
-     */
+    // Get all users
     @GetMapping("/all")
     public ApiResponse<List<UserResponse>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
 
-        List<User> users =
-                userService.getAllUsers();
-
-        List<UserResponse> responses =
-                users.stream().map(user -> {
-
-                    UserResponse response =
-                            new UserResponse();
-
+        List<UserResponse> responses = users.stream().map(user -> {
+                    UserResponse response = new UserResponse();
                     response.setId(user.getId());
-
-                    response.setUsername(
-                            user.getUsername()
-                    );
-
-                    response.setEmail(
-                            user.getEmail()
-                    );
-
-                    response.setRole(
-                            user.getRole()
-                    );
-
+                    response.setUsername(user.getUsername());
+                    response.setEmail(user.getEmail());
+                    response.setRole(user.getRole());
                     return response;
-
                 }).toList();
 
-        ApiResponse<List<UserResponse>> apiResponse =
-                new ApiResponse<>();
-
+        ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-
-        apiResponse.setMessage(
-                "Get all users successfully"
-        );
-
+        apiResponse.setMessage("Get all users successfully");
         apiResponse.setData(responses);
-
         return apiResponse;
     }
 
@@ -169,43 +100,25 @@ public class UserController {
     public ApiResponse<UserResponse> getProfile(
             Authentication authentication
     ) {
-
         // Lấy email từ JWT
-        String email =
-                authentication.getName();
+        String email = authentication.getName();
 
         // Tìm user trong database
-        User user =
-                userService.findByEmail(email);
+        User user = userService.findByEmail(email);
 
         // Convert entity -> DTO
-        UserResponse response =
-                new UserResponse();
+        UserResponse response = new UserResponse();
 
         response.setId(user.getId());
-
-        response.setUsername(
-                user.getUsername()
-        );
-
-        response.setEmail(
-                user.getEmail()
-        );
-
-        response.setRole(
-                user.getRole()
-        );
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
 
         // Standard response
-        ApiResponse<UserResponse> apiResponse =
-                new ApiResponse<>();
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
 
         apiResponse.setSuccess(true);
-
-        apiResponse.setMessage(
-                "Get profile successfully"
-        );
-
+        apiResponse.setMessage("Get profile successfully");
         apiResponse.setData(response);
 
         return apiResponse;

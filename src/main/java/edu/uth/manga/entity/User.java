@@ -8,17 +8,22 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+    @UniqueConstraint(columnNames = "email", name = "UK_users_email"),
+    @UniqueConstraint(columnNames = "username", name = "UK_users_username")
+})
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity {
 
+// Kế thừa để có id, createdAt, updatedAt tự động
+public class User extends BaseEntity {
+    @Column(nullable = false, unique = true)
     private String username;
+
     @Column(nullable = false, unique = true)
     private String email;
-
     private String password;
 
     @Enumerated(EnumType.STRING)

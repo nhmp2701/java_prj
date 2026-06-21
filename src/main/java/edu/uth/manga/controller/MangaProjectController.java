@@ -4,19 +4,16 @@ import edu.uth.manga.dto.request.MangaProjectCreationRequest;
 import edu.uth.manga.entity.MangaProject;
 import edu.uth.manga.service.MangaProjectService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import edu.uth.manga.dto.response.MangaProjectResponse;
-
 import java.util.List;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/projects")
 public class MangaProjectController {
     private final MangaProjectService projectService;
-
-    public MangaProjectController(MangaProjectService projectService) {
-        this.projectService = projectService;
-    }
 
     // createProject()
     @PostMapping

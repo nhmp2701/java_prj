@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApiResponse<T> {
-    private boolean success; // Khôi phục trường này
+    private boolean success;
     private T data;
     private String message;
 
-    // Thêm constructor 2 tham số để tương thích ngược với code cũ của bạn
+    // Thêm constructor 2 tham số để tương thích ngược
     public ApiResponse(T data, String message) {
-        this.success = true; // Mặc định là true nếu có data trả về
+        this.success = true;
         this.data = data;
         this.message = message;
     }

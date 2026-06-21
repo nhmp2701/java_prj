@@ -8,7 +8,7 @@ import java.util.List; // Nhớ import List
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    // Thêm dòng này vào:
+    // Tìm review theo AssetID
     List<Review> findByAssetId(Long assetId);
 
 }
