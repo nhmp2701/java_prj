@@ -35,6 +35,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    public ResponseEntity<ApiResponse<Object>>
+    handleInvalidStateTransitionException(InvalidStateTransitionException exception)
+    {
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setSuccess(false);
+        response.setMessage(exception.getMessage());
+        response.setData(null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     // Runtime Exception returns HTTP 500 (INTERNAL_SERVER_ERROR) with proper error status
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>>

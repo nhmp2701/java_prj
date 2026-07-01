@@ -1,4 +1,5 @@
 package edu.uth.manga.controller;
+
 import edu.uth.manga.dto.response.ApiResponse;
 import edu.uth.manga.dto.request.MangaProjectCreationRequest;
 import edu.uth.manga.entity.MangaProject;
@@ -19,46 +20,19 @@ public class MangaProjectController {
     @PostMapping
     public ApiResponse<MangaProjectResponse> createProject(
             @Valid @RequestBody MangaProjectCreationRequest request) {
-        MangaProject project = new MangaProject();
-        project.setTitle(request.getTitle());
-        project.setDescription(request.getDescription());
-        project.setStatus(request.getStatus());
-        project.setStartDate(request.getStartDate());
-        project.setEndDate(request.getEndDate());
+        MangaProject project = toEntity(request);
         MangaProject savedProject = projectService.createProject(project);
-        MangaProjectResponse response = new MangaProjectResponse();
-        response.setId(savedProject.getId());
-        response.setTitle(savedProject.getTitle());
-        response.setDescription(savedProject.getDescription());
-        response.setStatus(savedProject.getStatus());
-        response.setStartDate(savedProject.getStartDate());
-        response.setEndDate(savedProject.getEndDate());
-        ApiResponse<MangaProjectResponse> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage("Project created successfully");
-        apiResponse.setData(response);
-        return apiResponse;
+        return buildResponse(toResponse(savedProject), "Project created successfully");
     }
 
     // getAllProjects()
     @GetMapping
     public ApiResponse<List<MangaProjectResponse>> getAllProjects() {
         List<MangaProject> projects = projectService.getAllProjects();
-        List<MangaProjectResponse> responses = projects.stream().map(project -> {
-            MangaProjectResponse response = new MangaProjectResponse();
-            response.setId(project.getId());
-            response.setTitle(project.getTitle());
-            response.setDescription(project.getDescription());
-            response.setStatus(project.getStatus());
-            response.setStartDate(project.getStartDate());
-            response.setEndDate(project.getEndDate());
-            return response;
-        }).toList();
-        ApiResponse<List<MangaProjectResponse>> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage("Get all projects successfully");
-        apiResponse.setData(responses);
-        return apiResponse;
+        List<MangaProjectResponse> responses = projects.stream()
+                .map(this::toResponse)
+                .toList();
+        return buildResponse(responses, "Get all projects successfully");
     }
 
     // getProjectById()
@@ -66,18 +40,7 @@ public class MangaProjectController {
     public ApiResponse<MangaProjectResponse> getProjectById(
             @PathVariable Long id) {
         MangaProject project = projectService.getProjectById(id);
-        MangaProjectResponse response = new MangaProjectResponse();
-        response.setId(project.getId());
-        response.setTitle(project.getTitle());
-        response.setDescription(project.getDescription());
-        response.setStatus(project.getStatus());
-        response.setStartDate(project.getStartDate());
-        response.setEndDate(project.getEndDate());
-        ApiResponse<MangaProjectResponse> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage("Get project successfully");
-        apiResponse.setData(response);
-        return apiResponse;
+        return buildResponse(toResponse(project), "Get project successfully");
     }
 
     // updateProject()
@@ -85,24 +48,41 @@ public class MangaProjectController {
     public ApiResponse<MangaProjectResponse> updateProject(
             @PathVariable Long id,
             @Valid @RequestBody MangaProjectCreationRequest request) {
+        MangaProject project = toEntity(request);
+        MangaProject updateProject = projectService.updateProject(id, project);
+        return buildResponse(toResponse(updateProject), "Update project successfully");
+    }
+
+    private MangaProject toEntity(MangaProjectCreationRequest request) {
         MangaProject project = new MangaProject();
         project.setTitle(request.getTitle());
         project.setDescription(request.getDescription());
         project.setStatus(request.getStatus());
         project.setStartDate(request.getStartDate());
         project.setEndDate(request.getEndDate());
-        MangaProject updateProject = projectService.updateProject(id, project);
+        project.setCoverUrl(request.getCoverUrl());
+        project.setAuthorName(request.getAuthorName());
+        return project;
+    }
+
+    private MangaProjectResponse toResponse(MangaProject project) {
         MangaProjectResponse response = new MangaProjectResponse();
-        response.setId(updateProject.getId());
-        response.setTitle(updateProject.getTitle());
-        response.setDescription(updateProject.getDescription());
-        response.setStatus(updateProject.getStatus());
-        response.setStartDate(updateProject.getStartDate());
-        response.setEndDate(updateProject.getEndDate());
-        ApiResponse<MangaProjectResponse> apiResponse = new ApiResponse<>();
+        response.setId(project.getId());
+        response.setTitle(project.getTitle());
+        response.setDescription(project.getDescription());
+        response.setStatus(project.getStatus());
+        response.setStartDate(project.getStartDate());
+        response.setEndDate(project.getEndDate());
+        response.setCoverUrl(project.getCoverUrl());
+        response.setAuthorName(project.getAuthorName());
+        return response;
+    }
+
+    private <T> ApiResponse<T> buildResponse(T data, String message) {
+        ApiResponse<T> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Update project successfully");
-        apiResponse.setData(response);
+        apiResponse.setMessage(message);
+        apiResponse.setData(data);
         return apiResponse;
     }
 

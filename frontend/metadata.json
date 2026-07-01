@@ -1,0 +1,6 @@
+{
+  "name": "MangaFlow Pro",
+  "description": "The professional workspace for digital storytellers to manage projects, tasks, reviews, and reading experiences.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

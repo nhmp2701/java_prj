@@ -20,4 +20,6 @@ public class MangaProjectCreationRequest {
     private LocalDate startDate;
     @NotNull(message = "End date is required")
     private LocalDate endDate;
+    private String coverUrl;
+    private String authorName;
 }

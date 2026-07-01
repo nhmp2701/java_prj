@@ -1,3 +1,6 @@
+create database manga_management_system;
+
+
 -- USERS
 
 INSERT INTO users(username,email,password,role)

@@ -15,4 +15,6 @@ public class MangaProjectResponse {
     private ProjectStatus status;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String coverUrl;
+    private String authorName;
 }
