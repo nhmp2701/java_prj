@@ -6,16 +6,11 @@
 import { useState, useEffect } from 'react';
 import AuthScreen from './components/AuthScreen';
 import DashboardView from './components/DashboardView';
-// The following components are not on disk yet. We comment imports out and stub them below.
-// import Sidebar from './components/Sidebar';
-// import AssetsView from './components/AssetsView';
-// import CompositionView from './components/CompositionView';
-// import ReviewView from './components/ReviewView';
-// import LibraryView from './components/LibraryView';
-// import ReaderView from './components/ReaderView';
-
+import AssetsView from './components/AssetsView';
+import CompositionView from './components/CompositionView';
 import { Project, Task, MangaPage, Feedback, Reviewer, UserSession } from './types';
 import { INITIAL_PROJECTS, INITIAL_TASKS, INITIAL_PAGES, INITIAL_REVIEWERS } from './mockData';
+import { createProject, createTask, getProjects, getTasks, updateTaskStatus } from './services/api';
 
 // Stub components directly in App.tsx to bypass missing file compile errors while complying with "no new component files" instruction.
 const Sidebar = ({ activeTab, setActiveTab, session, onLogout }: any) => (
@@ -51,29 +46,6 @@ const Sidebar = ({ activeTab, setActiveTab, session, onLogout }: any) => (
   </div>
 );
 
-const AssetsView = () => <div className="p-6 bg-white rounded-2xl border border-outline-variant/15">Assets View (Placeholder - File components/AssetsView.tsx chưa được tạo)</div>;
-const CompositionView = ({ onAddTask, projects }: any) => (
-  <div className="p-6 bg-white rounded-2xl border border-outline-variant/15 space-y-4">
-    <h3 className="font-bold text-lg">Composition View (Placeholder)</h3>
-    <p className="text-sm text-on-surface-variant">File components/CompositionView.tsx chưa được tạo. Bạn có thể tự tạo nó sau.</p>
-    <button 
-      onClick={() => onAddTask({
-        id: String(Date.now()),
-        projectId: projects[0]?.id || '1',
-        title: 'New Manga Task via Placeholder',
-        description: 'Auto task description',
-        column: 'TODO',
-        tag: 'Chapter 1',
-        priority: 'Medium',
-        dueDate: new Date().toISOString().split('T')[0],
-        assignees: []
-      })}
-      className="bg-primary text-on-primary text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer hover:opacity-90 active:scale-95 transition-all"
-    >
-      Quick Add Task Test (Backend Connect)
-    </button>
-  </div>
-);
 const ReviewView = () => <div className="p-6 bg-white rounded-2xl border border-outline-variant/15">Review View (Placeholder - File components/ReviewView.tsx chưa được tạo)</div>;
 const LibraryView = ({ onAddProject }: any) => (
   <div className="p-6 bg-white rounded-2xl border border-outline-variant/15 space-y-4">
@@ -118,16 +90,15 @@ export default function App() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   // Fetch projects and tasks helper
-  const fetchData = (authToken: string) => {
-    fetch('http://localhost:8080/projects', {
-      headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
-    })
-    .then(res => res.json())
-    .then(apiRes => {
-      if (apiRes.success && Array.isArray(apiRes.data)) {
-        const mapped = apiRes.data.map((proj: any) => ({
+  const fetchData = async (authToken: string) => {
+    try {
+      const [projectsRes, tasksRes] = await Promise.all([
+        getProjects(authToken),
+        getTasks(authToken)
+      ]);
+
+      if (projectsRes?.success && Array.isArray(projectsRes.data)) {
+        const mapped = projectsRes.data.map((proj: any) => ({
           id: String(proj.id),
           name: proj.title,
           description: proj.description,
@@ -141,18 +112,9 @@ export default function App() {
           setSelectedProject(mapped[0]);
         }
       }
-    })
-    .catch(err => console.error("Failed to fetch projects", err));
 
-    fetch('http://localhost:8080/api/tasks', {
-      headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
-    })
-    .then(res => res.json())
-    .then(apiRes => {
-      if (apiRes.success && Array.isArray(apiRes.data)) {
-        const mapped = apiRes.data.map((task: any) => ({
+      if (tasksRes?.success && Array.isArray(tasksRes.data)) {
+        const mapped = tasksRes.data.map((task: any) => ({
           id: String(task.id),
           projectId: String(task.chapterId || 1),
           title: task.title,
@@ -165,8 +127,9 @@ export default function App() {
         }));
         setTasks(mapped);
       }
-    })
-    .catch(err => console.error("Failed to fetch tasks", err));
+    } catch (err) {
+      console.error('Failed to fetch backend data', err);
+    }
   };
 
   // Auto load session on startup
@@ -232,17 +195,12 @@ export default function App() {
   };
 
   // Library actions
-  const handleAddProject = (newProject: Project) => {
+  const handleAddProject = async (newProject: Project) => {
     const token = localStorage.getItem('token') || session.token;
     if (!token) return;
 
-    fetch('http://localhost:8080/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
+    try {
+      const apiRes = await createProject({
         title: newProject.name,
         description: newProject.description,
         status: newProject.status,
@@ -250,11 +208,9 @@ export default function App() {
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         coverUrl: newProject.imageUrl,
         authorName: session.username || session.firstName
-      })
-    })
-    .then(res => res.json())
-    .then(apiRes => {
-      if (apiRes.success && apiRes.data) {
+      }, token);
+
+      if (apiRes?.success && apiRes.data) {
         const created = apiRes.data;
         const mapped: Project = {
           id: String(created.id),
@@ -268,32 +224,26 @@ export default function App() {
         setProjects(prev => [mapped, ...prev]);
         setSelectedProject(mapped);
       }
-    })
-    .catch(err => console.error("Failed to add project", err));
+    } catch (err) {
+      console.error('Failed to add project', err);
+    }
   };
 
   // Composition actions
-  const handleAddTask = (newTask: Task) => {
+  const handleAddTask = async (newTask: Task) => {
     const token = localStorage.getItem('token') || session.token;
     if (!token) return;
 
-    fetch('http://localhost:8080/api/tasks', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
+    try {
+      const apiRes = await createTask({
         title: newTask.title,
         description: newTask.description,
         assignedTo: newTask.assignees.length > 0 ? newTask.assignees[0].name : '',
         status: newTask.column,
         chapterId: Number(newTask.projectId) || null
-      })
-    })
-    .then(res => res.json())
-    .then(apiRes => {
-      if (apiRes.success && apiRes.data) {
+      }, token);
+
+      if (apiRes?.success && apiRes.data) {
         const createdTask = apiRes.data;
         const mapped: Task = {
           id: String(createdTask.id),
@@ -308,11 +258,12 @@ export default function App() {
         };
         setTasks(prev => [mapped, ...prev]);
       }
-    })
-    .catch(err => console.error("Failed to add task", err));
+    } catch (err) {
+      console.error('Failed to add task', err);
+    }
   };
 
-  const handleUpdateTaskColumn = (taskId: string, direction: 'prev' | 'next' | 'direct', newCol?: Task['column']) => {
+  const handleUpdateTaskColumn = async (taskId: string, direction: 'prev' | 'next' | 'direct', newCol?: Task['column']) => {
     const columns: Task['column'][] = ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'];
     const currentTask = tasks.find(t => t.id === taskId);
     if (!currentTask) return;
@@ -331,18 +282,9 @@ export default function App() {
     const token = localStorage.getItem('token') || session.token;
     if (!token) return;
 
-    fetch(`http://localhost:8080/api/tasks/${taskId}/status?status=${targetCol}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(res => {
-      if (!res.ok) throw new Error('Failed to update task status');
-      return res.json();
-    })
-    .then(apiRes => {
-      if (apiRes.success) {
+    try {
+      const apiRes = await updateTaskStatus(taskId, targetCol, token);
+      if (apiRes?.success) {
         setTasks(prevTasks => 
           prevTasks.map((t) => {
             if (t.id !== taskId) return t;
@@ -350,8 +292,9 @@ export default function App() {
           })
         );
       }
-    })
-    .catch(err => console.error("Failed to update status in backend", err));
+    } catch (err) {
+      console.error('Failed to update status in backend', err);
+    }
   };
 
   // Review asset actions
@@ -395,7 +338,7 @@ export default function App() {
           />
         );
       case 'assets':
-        return <AssetsView />;
+        return <AssetsView authToken={session.token} />;
       case 'composition':
         return (
           <CompositionView 
@@ -405,6 +348,7 @@ export default function App() {
             onUpdateTaskColumn={handleUpdateTaskColumn}
             onAddTask={handleAddTask}
             onSelectProjectDirectly={setSelectedProject}
+            authToken={session.token}
           />
         );
       case 'review':
