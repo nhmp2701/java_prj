@@ -3,9 +3,14 @@ package edu.uth.manga.controller;
 import edu.uth.manga.dto.response.ApiResponse;
 import edu.uth.manga.dto.request.MangaProjectCreationRequest;
 import edu.uth.manga.entity.MangaProject;
+import edu.uth.manga.enums.ChapterStatus;
+import edu.uth.manga.enums.ProjectStatus;
+import edu.uth.manga.repository.ChapterRepository;
 import edu.uth.manga.service.MangaProjectService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import edu.uth.manga.dto.response.MangaProjectResponse;
 import java.util.List;
@@ -15,8 +20,10 @@ import java.util.List;
 @RequestMapping("/projects")
 public class MangaProjectController {
     private final MangaProjectService projectService;
+    private final ChapterRepository chapterRepository;
 
     // createProject()
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD')")
     @PostMapping
     public ApiResponse<MangaProjectResponse> createProject(
             @Valid @RequestBody MangaProjectCreationRequest request) {
@@ -27,9 +34,13 @@ public class MangaProjectController {
 
     // getAllProjects()
     @GetMapping
-    public ApiResponse<List<MangaProjectResponse>> getAllProjects() {
+    public ApiResponse<List<MangaProjectResponse>> getAllProjects(Authentication authentication) {
         List<MangaProject> projects = projectService.getAllProjects();
+        boolean staff = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> List.of("ROLE_ADMIN", "ROLE_TEAM_LEAD", "ROLE_CREATOR", "ROLE_EDITOR")
+                        .contains(authority.getAuthority()));
         List<MangaProjectResponse> responses = projects.stream()
+                .filter(project -> staff || isReaderVisible(project))
                 .map(this::toResponse)
                 .toList();
         return buildResponse(responses, "Get all projects successfully");
@@ -38,12 +49,20 @@ public class MangaProjectController {
     // getProjectById()
     @GetMapping("/{id}")
     public ApiResponse<MangaProjectResponse> getProjectById(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
         MangaProject project = projectService.getProjectById(id);
+        boolean staff = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> List.of("ROLE_ADMIN", "ROLE_TEAM_LEAD", "ROLE_CREATOR", "ROLE_EDITOR")
+                        .contains(authority.getAuthority()));
+        if (!staff && !isReaderVisible(project)) {
+            throw new edu.uth.manga.exception.ResourceNotFoundException("Project not found");
+        }
         return buildResponse(toResponse(project), "Get project successfully");
     }
 
     // updateProject()
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD')")
     @PutMapping("/{id}")
     public ApiResponse<MangaProjectResponse> updateProject(
             @PathVariable Long id,
@@ -86,7 +105,13 @@ public class MangaProjectController {
         return apiResponse;
     }
 
+    private boolean isReaderVisible(MangaProject project) {
+        return project.getStatus() == ProjectStatus.PUBLISHED
+                || chapterRepository.existsByMangaIdAndStatus(project.getId(), ChapterStatus.PUBLISHED);
+    }
+
     // deleteProject()
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ApiResponse<String> deleteProject(
             @PathVariable Long id) {

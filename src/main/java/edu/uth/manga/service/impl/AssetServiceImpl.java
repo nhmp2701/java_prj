@@ -27,6 +27,8 @@ public class AssetServiceImpl implements AssetService {
     private final AssetRepository assetRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final edu.uth.manga.repository.ChapterRepository chapterRepository;
+    private final edu.uth.manga.repository.WorkflowTaskRepository workflowTaskRepository;
 
     // Define allowed file extensions and MIME types
     private static final Set<String> ALLOWED_EXTENSIONS = new HashSet<>(
@@ -75,28 +77,56 @@ public class AssetServiceImpl implements AssetService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy User"));
-        String fileUrl = "https://storage.uth.edu/manga/" + request.getFile().getOriginalFilename();
-        Asset asset = Asset.builder()
-                .fileName(request.getFile().getOriginalFilename())
+        
+        org.springframework.web.multipart.MultipartFile file = request.getFile();
+        String originalFilename = file.getOriginalFilename();
+        String filename = System.currentTimeMillis() + "_" + originalFilename;
+        
+        try {
+            java.io.File uploadDir = new java.io.File("uploads");
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            java.io.File dest = new java.io.File(uploadDir, filename);
+            file.transferTo(dest.getAbsoluteFile());
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Lỗi lưu file: " + e.getMessage());
+        }
+        
+        String fileUrl = "http://localhost:8080/api/public/assets/files/" + filename;
+        
+        Asset.AssetBuilder builder = Asset.builder()
+                .fileName(originalFilename)
                 .fileUrl(fileUrl)
-                .fileSize(request.getFile().getSize())
-                .fileType(request.getFile().getContentType())
+                .fileSize(file.getSize())
+                .fileType(file.getContentType())
                 .assetType(request.getAssetType())
                 .description(request.getDescription())
                 .version(1)
                 .uploadedBy(user)
-                .status(AssetStatus.PENDING)
-                .build();
+                .status(AssetStatus.PENDING);
 
+        if (request.getChapterId() != null) {
+            builder.chapter(chapterRepository.findById(request.getChapterId()).orElse(null));
+        }
+        if (request.getTaskId() != null) {
+            builder.task(workflowTaskRepository.findById(request.getTaskId()).orElse(null));
+        }
+
+        Asset asset = builder.build();
         return convertToResponse(assetRepository.save(asset));
     }
+    @Override
+    public List<AssetResponse> getAllAssets() {
+        return assetRepository.findAll().stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
     @Override
     public AssetResponse approveAsset(Long id, String notes, Long approverId) {
         Asset asset = assetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bản vẽ"));
-        if (asset.getStatus() != AssetStatus.PENDING) {
-            throw new IllegalArgumentException("Lỗi: Chỉ có thể duyệt các bản vẽ đang ở trạng thái PENDING!");
-        }
         User approver = userRepository.findById(approverId).orElseThrow();
         asset.setStatus(AssetStatus.APPROVED);
         asset.setApprovedAt(LocalDateTime.now());
@@ -115,15 +145,11 @@ public class AssetServiceImpl implements AssetService {
         Asset asset = assetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bản vẽ"));
 
-        // [Workflow Validation]
-        if (asset.getStatus() != AssetStatus.PENDING) {
-            throw new IllegalArgumentException("Lỗi: Chỉ có thể từ chối các bản vẽ đang ở trạng thái PENDING!");
-        }
-
         User rejecter = userRepository.findById(rejecterId).orElseThrow();
 
         // Cập nhật trạng thái thành REJECTED để đuổi Artist đi sửa
         asset.setStatus(AssetStatus.REJECTED);
+        asset.setApprovedAt(null);
         assetRepository.save(asset);
 
         // Bắt buộc lưu lại lý do từ chối (Comment) vào bảng Review
@@ -150,6 +176,12 @@ public class AssetServiceImpl implements AssetService {
         if (asset.getUploadedBy() != null) {
             res.setUploadedByUsername(asset.getUploadedBy().getUsername());
         }
+        if (asset.getChapter() != null) {
+            res.setChapterId(asset.getChapter().getId());
+        }
+        if (asset.getTask() != null) {
+            res.setTaskId(asset.getTask().getId());
+        }
         res.setCreatedAt(asset.getCreatedAt());
         res.setApprovedAt(asset.getApprovedAt());
         return res;
@@ -170,5 +202,29 @@ public class AssetServiceImpl implements AssetService {
                 .comment(comment)
                 .build();
         return reviewRepository.save(review);
+    }
+    @Override
+    public void deleteAsset(Long id) {
+        Asset asset = assetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bản vẽ"));
+        // Delete all related reviews first
+        List<Review> reviews = reviewRepository.findByAssetId(id);
+        reviewRepository.deleteAll(reviews);
+
+        // Delete physical file
+        try {
+            String fileUrl = asset.getFileUrl();
+            if (fileUrl != null && fileUrl.contains("/api/public/assets/files/")) {
+                String filename = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+                java.io.File file = new java.io.File("uploads", filename);
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
+        } catch (Exception e) {
+            // Ignore file deletion error
+        }
+
+        assetRepository.delete(asset);
     }
 }

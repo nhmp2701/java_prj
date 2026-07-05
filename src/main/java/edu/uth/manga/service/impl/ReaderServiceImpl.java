@@ -28,7 +28,7 @@ public class ReaderServiceImpl implements ReaderService {
         // Lọc: Chỉ lấy những truyện đang phát hành (IN_PROGRESS) hoặc hoàn thành (COMPLETED)
         List<MangaProject> mangas = mangaProjectRepository.findAll().stream()
                 .filter(m -> m.getStatus() != null &&
-                        (m.getStatus().name().equals("IN_PROGRESS") || m.getStatus().name().equals("COMPLETED")))
+                        m.getStatus().name().equals("PUBLISHED"))
                 .toList();
 
         return mangas.stream().map(manga -> MangaCatalogueResponse.builder()

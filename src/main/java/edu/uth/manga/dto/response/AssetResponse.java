@@ -13,6 +13,8 @@ public class AssetResponse {
     private Integer version;
     private String status;
     private String uploadedByUsername;
+    private Long chapterId;
+    private Long taskId;
     private LocalDateTime createdAt;
     private LocalDateTime approvedAt;
 }

@@ -10,6 +10,7 @@ import edu.uth.manga.security.service.JwtService;
 import edu.uth.manga.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -76,6 +77,7 @@ public class UserController {
     }
 
     // Get all users
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public ApiResponse<List<UserResponse>> getAllUsers() {
         List<User> users = userService.getAllUsers();
@@ -96,6 +98,7 @@ public class UserController {
         return apiResponse;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
     public ApiResponse<UserResponse> getProfile(
             Authentication authentication
@@ -121,6 +124,18 @@ public class UserController {
         apiResponse.setMessage("Get profile successfully");
         apiResponse.setData(response);
 
+        return apiResponse;
+    }
+
+    @GetMapping("/count-readers")
+    public ApiResponse<Long> getReaderCount() {
+        long count = userService.getAllUsers().stream()
+                .filter(u -> u.getRole() == edu.uth.manga.enums.RoleType.READER)
+                .count();
+        ApiResponse<Long> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Lấy số lượng độc giả thành công");
+        apiResponse.setData(count);
         return apiResponse;
     }
 }

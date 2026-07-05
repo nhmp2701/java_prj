@@ -5,5 +5,6 @@ public enum ProjectStatus {
     IN_PROGRESS, // Đang làm
     ON_HOLD, // Tạm dừng
     COMPLETED, // Hoàn thành
+    PUBLISHED, // Đã xuất bản
     CANCELLED // Hủy bỏ
 }

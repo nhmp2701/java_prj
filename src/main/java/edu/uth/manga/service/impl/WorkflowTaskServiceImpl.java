@@ -6,6 +6,8 @@ import edu.uth.manga.entity.WorkflowTask;
 import edu.uth.manga.enums.TaskStatus;
 import edu.uth.manga.exception.ResourceNotFoundException;
 import edu.uth.manga.repository.WorkflowTaskRepository;
+import edu.uth.manga.repository.ChapterRepository;
+import edu.uth.manga.entity.Chapter;
 import edu.uth.manga.service.WorkflowTaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WorkflowTaskServiceImpl implements WorkflowTaskService {
     private final WorkflowTaskRepository repository;
+    private final ChapterRepository chapterRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -30,12 +33,19 @@ public class WorkflowTaskServiceImpl implements WorkflowTaskService {
     @Override
     @Transactional
     public TaskResponse createTask(TaskRequest request) {
-        WorkflowTask task = WorkflowTask.builder()
+        WorkflowTask.WorkflowTaskBuilder builder = WorkflowTask.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .assignedTo(request.getAssignedTo())
-                .status(request.getStatus())
-                .build();
+                .status(request.getStatus());
+        
+        if (request.getChapterId() != null) {
+            Chapter chapter = chapterRepository.findById(request.getChapterId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Chapter không tồn tại với id = " + request.getChapterId()));
+            builder.chapter(chapter);
+        }
+
+        WorkflowTask task = builder.build();
         return mapToResponse(repository.save(task));
     }
 
@@ -83,6 +93,11 @@ public class WorkflowTaskServiceImpl implements WorkflowTaskService {
         if (request.getStatus() != null) {
             task.setStatus(request.getStatus());
         }
+        if (request.getChapterId() != null) {
+            Chapter chapter = chapterRepository.findById(request.getChapterId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Chapter không tồn tại với id = " + request.getChapterId()));
+            task.setChapter(chapter);
+        }
 
         return mapToResponse(repository.save(task));
     }
@@ -102,6 +117,7 @@ public class WorkflowTaskServiceImpl implements WorkflowTaskService {
                 .description(task.getDescription())
                 .assignedTo(task.getAssignedTo())
                 .status(task.getStatus())
+                .chapterId(task.getChapter() != null ? task.getChapter().getId() : null)
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .build();

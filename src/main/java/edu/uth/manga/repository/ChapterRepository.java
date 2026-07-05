@@ -12,5 +12,6 @@ import java.time.LocalDateTime;
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
 
     List<Chapter> findByMangaId(Long mangaId);
+    boolean existsByMangaIdAndStatus(Long mangaId, ChapterStatus status);
     List<Chapter> findByStatusAndScheduledPublishAtBefore(ChapterStatus status, LocalDateTime time);
 }

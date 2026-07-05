@@ -7,6 +7,7 @@ import edu.uth.manga.service.WorkflowTaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import lombok.AllArgsConstructor;
 import java.util.List;
@@ -19,6 +20,7 @@ public class WorkflowTaskController {
     private final WorkflowTaskService service;
 
     // Endpoint lấy toàn bộ danh sách công việc hiển thị lên Kanban Board
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<ApiResponse<List<TaskResponse>>> getAllTasks() {
         ApiResponse<List<TaskResponse>> response = new ApiResponse<>();
@@ -29,6 +31,7 @@ public class WorkflowTaskController {
     }
 
     // Endpoint xử lý form tạo mới một thẻ công việc
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD', 'CREATOR', 'EDITOR')")
     @PostMapping
     public ResponseEntity<ApiResponse<TaskResponse>> createTask(
             @Valid @RequestBody TaskRequest request) {
@@ -39,6 +42,7 @@ public class WorkflowTaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD')")
     @PutMapping("/{id}/assign")
     public ResponseEntity<ApiResponse<TaskResponse>> assignTask(
             @PathVariable Long id,
@@ -50,6 +54,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD', 'CREATOR', 'EDITOR')")
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<TaskResponse>> updateStatus(
             @PathVariable Long id,
@@ -61,6 +66,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskResponse>> getTaskById(@PathVariable Long id) {
         ApiResponse<TaskResponse> response = new ApiResponse<>();
@@ -70,6 +76,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD', 'CREATOR')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskResponse>> updateTask(
             @PathVariable Long id,
@@ -81,6 +88,7 @@ public class WorkflowTaskController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTask(@PathVariable Long id) {
         service.deleteTask(id);

@@ -7,7 +7,7 @@ export interface Project {
   id: string;
   name: string;
   description: string;
-  status: 'PLANNING' | 'IN_PROGRESS' | 'COMPLETED';
+  status: 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'PUBLISHED' | 'CANCELLED';
   updatedAt: string;
   imageUrl: string;
   category: 'All Projects' | 'Drafts' | 'Published';
@@ -16,6 +16,7 @@ export interface Project {
 export interface Task {
   id: string;
   projectId: string;
+  chapterId?: string;
   title: string;
   description: string;
   column: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
@@ -66,4 +67,21 @@ export interface UserSession {
   username?: string;
   role?: string;
   token?: string;
+}
+
+export interface AppUser {
+  id: string;
+  username: string;
+  email: string;
+  role: 'ADMIN' | 'TEAM_LEAD' | 'CREATOR' | 'EDITOR' | 'READER';
+}
+
+export interface Chapter {
+  id: string;
+  title: string;
+  chapterNumber: number;
+  content?: string;
+  status: 'DRAFT' | 'PENDING' | 'SCHEDULED' | 'PUBLISHED' | 'REJECTED';
+  mangaId: string;
+  scheduledPublishAt?: string;
 }

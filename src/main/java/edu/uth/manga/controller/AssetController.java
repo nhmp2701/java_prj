@@ -8,6 +8,7 @@ import edu.uth.manga.dto.response.ReviewResponse;
 import edu.uth.manga.service.AssetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +19,14 @@ import java.util.List;
 public class AssetController {
     private final AssetService assetService;
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    public ApiResponse<List<AssetResponse>> getAllAssets() {
+        return new ApiResponse<>(assetService.getAllAssets(), "Lấy danh sách bản vẽ thành công");
+    }
+
     // API UPLOAD FILE (Frontend gửi file ảnh lên)
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD', 'CREATOR')")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<AssetResponse> uploadAsset(
             @ModelAttribute AssetUploadRequest request,
@@ -29,6 +37,7 @@ public class AssetController {
     }
 
     // API PHÊ DUYỆT BÀI
+    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR', 'TEAM_LEAD')")
     @PostMapping("/{id}/approve")
     public ApiResponse<AssetResponse> approveAsset(
             @PathVariable Long id,
@@ -40,6 +49,7 @@ public class AssetController {
     }
 
     // API TỪ CHỐI BÀI (Yêu cầu sửa lại)
+    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR', 'TEAM_LEAD')")
     @PostMapping("/{id}/reject")
     public ApiResponse<AssetResponse> rejectAsset(
             @PathVariable Long id,
@@ -66,6 +76,7 @@ public class AssetController {
     }
 
     // API THÊM BÌNH LUẬN ĐỘC LẬP (TRAO ĐỔI)
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/comments")
     public ApiResponse<ReviewResponse> addComment(
             @PathVariable Long id,
@@ -83,5 +94,12 @@ public class AssetController {
         );
 
         return new ApiResponse<>(response, "Đã thêm bình luận thành công");
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEAM_LEAD', 'CREATOR')")
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteAsset(@PathVariable Long id) {
+        assetService.deleteAsset(id);
+        return new ApiResponse<>(null, "Xóa bản vẽ thành công");
     }
 }

@@ -9,6 +9,8 @@ public interface AssetService {
     AssetResponse uploadAsset(AssetUploadRequest request, Long userId);
     AssetResponse approveAsset(Long id, String notes, Long approverId);
     AssetResponse rejectAsset(Long id, ReviewRequest request, Long rejecterId);
+    List<AssetResponse> getAllAssets();
     List<Review> getReviewsByAssetId(Long assetId);
     Review addComment(Long assetId, String comment, Long reviewerId);
+    void deleteAsset(Long id);
 }

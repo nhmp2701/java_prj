@@ -30,6 +30,7 @@ public class JwtService {
                 .subject(user.getEmail())
                 // role
                 .claim("role", user.getRole().name())
+                .claim("userId", user.getId())
                 .issuedAt(new Date())
                 // token hết hạn sau 1 giờ
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
@@ -54,6 +55,10 @@ public class JwtService {
     // Extract role
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
+    }
+
+    public Long extractUserId(String token) {
+        return extractAllClaims(token).get("userId", Long.class);
     }
 
     // Validate token

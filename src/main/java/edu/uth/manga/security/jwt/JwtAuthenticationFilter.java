@@ -51,6 +51,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Lấy role
         String role = jwtService.extractRole(token);
+        Long userId = jwtService.extractUserId(token);
+
+        request.setAttribute("currentUserId", userId);
 
         // Tạo authentication object
         UsernamePasswordAuthenticationToken authToken =

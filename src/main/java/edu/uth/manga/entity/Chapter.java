@@ -1,5 +1,6 @@
 package edu.uth.manga.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.uth.manga.enums.ChapterStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,6 +34,7 @@ public class Chapter {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manga_id", nullable = false)
+    @JsonIgnore
     private MangaProject manga;
     @Column(name = "scheduled_publish_at")
     private java.time.LocalDateTime scheduledPublishAt;
