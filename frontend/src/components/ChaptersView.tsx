@@ -17,11 +17,13 @@ import {
   Rocket,
   Send,
 } from "lucide-react";
-import { Chapter, Project } from "../types";
+import { Chapter, Project, Task } from "../types";
 
 interface ChaptersViewProps {
   chapters: Chapter[];
   projects: Project[];
+  tasks?: Task[];
+  assets?: any[];
   selectedProject: Project | null;
   onSelectProjectDirectly: (project: Project) => void;
   onSelectChapter: (chapter: Chapter, tabRedirect: string) => void;
@@ -44,6 +46,8 @@ interface ChaptersViewProps {
 export default function ChaptersView({
   chapters,
   projects,
+  tasks = [],
+  assets = [],
   selectedProject,
   onSelectProjectDirectly,
   onSelectChapter,
@@ -80,6 +84,19 @@ export default function ChaptersView({
     if (activeFilter === "ALL") return true;
     return c.status === activeFilter;
   });
+
+  const getReviewReadiness = (chapterId: string) => {
+    const chapterTasks = tasks.filter((task) => String(task.chapterId || task.projectId) === String(chapterId));
+    const chapterAssets = assets.filter((asset) => String(asset.chapterId) === String(chapterId));
+    const unfinishedTasks = chapterTasks.filter((task) => task.column !== "DONE").length;
+    const unapprovedAssets = chapterAssets.filter((asset) => asset.status !== "APPROVED").length;
+
+    if (chapterTasks.length === 0) return { ready: false, reason: "Cần có ít nhất 1 task" };
+    if (unfinishedTasks > 0) return { ready: false, reason: "Tất cả task phải DONE" };
+    if (chapterAssets.length === 0) return { ready: false, reason: "Cần có ít nhất 1 asset" };
+    if (unapprovedAssets > 0) return { ready: false, reason: "Tất cả asset phải APPROVED" };
+    return { ready: true, reason: "Gửi yêu cầu duyệt" };
+  };
 
   const getStatusBadgeStyles = (status: Chapter["status"]) => {
     switch (status) {
@@ -127,7 +144,7 @@ export default function ChaptersView({
         title: title.trim(),
         chapterNumber,
         content: content.trim(),
-        status: scheduledPublishAt ? "SCHEDULED" : "DRAFT",
+	        status: "DRAFT",
         mangaId: String(selectedProjectId),
         scheduledPublishAt: scheduledPublishAt || undefined,
       };
@@ -295,16 +312,24 @@ export default function ChaptersView({
                         )}
 
                         {/* Send for review */}
-                        {(ch.status === "DRAFT" || ch.status === "REJECTED") && canRequestChapterApproval && (
-                          <button
-                            onClick={() => onUpdateChapterStatus(ch.id, "PENDING")}
-                            title="Gửi yêu cầu duyệt"
-                            className="bg-primary/10 text-primary hover:bg-primary/20 p-2 rounded-xl text-xs font-bold transition-all cursor-pointer border-none flex items-center gap-1"
-                          >
-                            <Send size={12} />
-                            Xin Duyệt
-                          </button>
-                        )}
+                        {(ch.status === "DRAFT" || ch.status === "REJECTED") && canRequestChapterApproval && (() => {
+                          const readiness = getReviewReadiness(ch.id);
+                          return (
+                            <button
+                              onClick={() => readiness.ready && onUpdateChapterStatus(ch.id, "PENDING")}
+                              disabled={!readiness.ready}
+                              title={readiness.reason}
+                              className={`p-2 rounded-xl text-xs font-bold transition-all border-none flex items-center gap-1 ${
+                                readiness.ready
+                                  ? "bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer"
+                                  : "bg-slate-100 text-slate-500 cursor-not-allowed"
+                              }`}
+                            >
+                              <Send size={12} />
+                              Xin Duyệt
+                            </button>
+                          );
+                        })()}
 
                         {ch.status === "DRAFT" && canQuickApproveChapters && (
                           <button

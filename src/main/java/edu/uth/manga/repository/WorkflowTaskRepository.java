@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WorkflowTaskRepository extends JpaRepository<WorkflowTask, Long> {
+    long countByChapterId(Long chapterId);
     long countByChapterIdAndStatusNot(Long chapterId, TaskStatus status);
 }

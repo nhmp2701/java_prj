@@ -930,6 +930,8 @@ export default function App() {
           <ChaptersView
             chapters={chapters}
             projects={projects}
+            tasks={tasks}
+            assets={assets}
             selectedProject={selectedProject}
             onSelectProjectDirectly={setSelectedProject}
             onSelectChapter={handleSelectChapter}

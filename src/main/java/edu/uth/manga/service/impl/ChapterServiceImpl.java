@@ -67,7 +67,7 @@ public class ChapterServiceImpl implements ChapterService {
                 .chapterNumber(request.getChapterNumber())
                 .content(request.getContent())
                 .scheduledPublishAt(request.getScheduledPublishAt())
-                .status(request.getScheduledPublishAt() != null ? ChapterStatus.SCHEDULED : ChapterStatus.DRAFT)
+                .status(ChapterStatus.DRAFT)
                 .manga(manga)
                 .build();
 
@@ -86,6 +86,9 @@ public class ChapterServiceImpl implements ChapterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Chapter not found with id = " + id));
 
         validateStatusTransition(chapter.getStatus(), status);
+        if (status == ChapterStatus.PENDING) {
+            validateReadyForReview(id);
+        }
         chapter.setStatus(status);
         return chapterRepository.save(chapter);
     }
@@ -119,6 +122,30 @@ public class ChapterServiceImpl implements ChapterService {
         if (!allowed) {
             throw new InvalidStateTransitionException(
                     "Invalid chapter status transition from " + current + " to " + target + ".");
+        }
+    }
+
+    private void validateReadyForReview(Long chapterId) {
+        long totalTasks = workflowTaskRepository.countByChapterId(chapterId);
+        if (totalTasks == 0) {
+            throw new InvalidStateTransitionException("Cannot request review because chapter has no task.");
+        }
+
+        long unfinishedTasks = workflowTaskRepository.countByChapterIdAndStatusNot(chapterId, TaskStatus.DONE);
+        if (unfinishedTasks > 0) {
+            throw new InvalidStateTransitionException(
+                    "Cannot request review because " + unfinishedTasks + " task(s) are not DONE.");
+        }
+
+        long totalAssets = assetRepository.countByChapterId(chapterId);
+        if (totalAssets == 0) {
+            throw new InvalidStateTransitionException("Cannot request review because chapter has no asset.");
+        }
+
+        long unapprovedAssets = assetRepository.countByChapterIdAndStatusNot(chapterId, AssetStatus.APPROVED);
+        if (unapprovedAssets > 0) {
+            throw new InvalidStateTransitionException(
+                    "Cannot request review because " + unapprovedAssets + " asset(s) are not APPROVED.");
         }
     }
 }
